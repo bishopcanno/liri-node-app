@@ -32,7 +32,7 @@ switch (command) {
       break;
     
     case "do-what-it-says":
-      lotto();
+      fsRandom();
       break;
     
     default:
@@ -46,26 +46,27 @@ function toTitleCase(str) {
     });
 }
 
-// function for bandsintown api, lacks much of the requisit functionality currently
-function bandTour(search){
-    
-    request("https://rest.bandsintown.com/artists/" + search + "/events?app_id=codingbootcamp", function(error, response, body){
-        
-    if (!error && response.statusCode === 200) {
-            
-            var data = JSON.parse(body, null, 2);
+// bandsintown api
+function bandTour(search) { // bandsintown API function with a parameter of search that will ne injected into the query Url for the API call/request
 
-            console.log(data);
-            
-            console.log(data.venue.name);
-
-            console.log(data.offers.body.venue.name);
-            
-            console.log(JSON.parse(body.venue.name));
-
-        }
-    }); 
-}   
+    var queryUrl = `https://rest.bandsintown.com/artists/${search}/events?app_id=codingbootcamp`; // cleaner to define url outside of the request function. 
+    // the ${search} is what is called a template literal and it is bad ass when concatenating variables into strings. 
+    // Instead of "http://thisurl.com/" + variable + "/restoftheurl/", you simply write` http://thisurl.com/${variable}/restoftheurl/` using the 
+    // tick marks to surround the entire string.
+ 
+    request(queryUrl, function (error, response, body)  { // do a request with the queryUrl variable
+ 
+        if (error) console.log(`There was an error getting tour data for ${search}.`); // if there is an error, console where the error is happening.
+        if (!error && response.statusCode === 200) { // if there isn't an error
+            var data = JSON.parse(body, null, 2); // parse the body data
+            console.log(data); // log if necessary
+            data.forEach(function(event) { // iterate through all objects in the data and do this/pull this data for each object contained in the response
+                console.log(`Show Lineup: ${event.lineup[0]}\nShow Date: ${moment(event.datetime).format("MM-DD-YYYY")}\nVenue: ${event.venue.name}\nLocation: ${event.venue.city}, ${event.venue.region}\n`); // an example of what a template literal console.log looks like. One line and one console log. Pretty dope.
+            });           
+        };
+    });
+ }
+ 
 
 // spotify npm
 function spotifySong (searchSong){
@@ -107,6 +108,20 @@ function movieInfo(search){
 }
 
 // goes into the random.txt file and extracts the info stored there, currently lacks any functionality
-function lotto(){
-    console.log("lotto functon executed");
+function fsRandom(){
+    fs.readFile("random.txt", "utf8", function(error, data) {
+
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+          return console.log(error);
+        }
+
+        // console.log(data);
+
+        var dataArr = data.split(",");
+      
+        console.log(dataArr[1]);
+      
+        spotifySong(dataArr[1]);
+      });
 }
